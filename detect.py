@@ -130,7 +130,7 @@ class YOLOv5Detector:
         #     source = check_file(source)  # download
 
         # Directories
-        # save_dir = increment_path(Path(self.project) / self.name, exist_ok=self.exist_ok)  # increment run
+        save_dir = increment_path(Path(self.project) / self.name, exist_ok=self.exist_ok)  # increment run
         save_dir = Path('runs/detect')
         (save_dir / 'labels' if self.save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
 
