@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
-import cv2
-import numpy as np
 from detect import YOLOv5Detector
 import time
 import pynput

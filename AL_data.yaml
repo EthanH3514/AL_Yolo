@@ -18,7 +18,3 @@ nc: 2
 names:
   0: person
   1: else
-
-
-# Download script/URL (optional)
-# download: https://ultralytics.com/assets/coco128.zip
