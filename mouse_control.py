@@ -150,7 +150,7 @@ def monitor_global_var():
                 x *= weight_pow
                 y *= weight_pow
             print(x, y)
-            # driver.moveR(int(x), int(y), True)
+            driver.moveR(int(x), int(y), True)
             
             location.clear()
             xyxy.clear()
