@@ -1,4 +1,9 @@
 ### 一个基于yolov5的Apex Legend AI辅瞄外挂
+## 环境依赖
+* 罗技驱动
+* python3.10
+* CUDA 11
+* opencv
 ## 项目流程图
 ![项目流程图](https://user-images.githubusercontent.com/103171084/240091322-a9e21a41-faa8-4ce8-96b5-0be957c86012.png)
 ### 模型训练
