@@ -10,8 +10,8 @@ from utils.general import (LOGGER, Profile, check_img_size, check_requirements, 
 from utils.plots import Annotator, colors
 from utils.torch_utils import select_device
 
-ROOT = 'E:/code/AL_Yolo'
-
+ROOT = os.getcwd()
+# ROOT = 'E:/code/AL_Yolo'
 
 class YOLOv5Detector:
     def __init__(
