@@ -46,9 +46,17 @@ def get_vector(target):
         target[i] *= SMOOTH / MOUSE_SENSITIVITY
     return target
 
+# quit_signal
+quit_signal = True
+
 def monitor_global_var():
+    global Q_quit
+    
     location = []
-    while True:
+    
+    global quit_signal
+    while quit_signal:
+        
         xyxy = get_global_var()
         if len(xyxy) < 4:
             xyxy.clear()
@@ -76,6 +84,8 @@ def monitor_global_var():
                 continue
             
             vector = get_vector(target)
+
+
             print(target)
             mouse_move(vector[0], vector[1])
             
@@ -83,19 +93,16 @@ def monitor_global_var():
             xyxy.clear()
         
         time.sleep(0.001)
-     
-     
-     
+
 
 monitor_thread = threading.Thread(target=monitor_global_var)
-monitor_thread.start()
-
 
 def run():
-    monitor_thread = threading.Thread(target=monitor_global_var)
     monitor_thread.start()
 
 
 def stop():
+    global quit_signal
+    quit_signal = False
     monitor_thread.join()
     
