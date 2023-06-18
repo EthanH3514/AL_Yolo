@@ -27,20 +27,23 @@ def release(key):
     elif key == pynput.keyboard.Key.end:  # End
         winsound.Beep(600, 200)
         mouse_control.stop()
+        return False
 
 if __name__ == '__main__':
     winsound.Beep(800, 200)
     
-    with pynput.keyboard.Listener(on_release=release) as k:
-        k.join()
+    listener = pynput.keyboard.Listener(on_release=release)
+    listener.start()
+    listener.join()
+    
+    current_time = time.time()
+    elapsed_time = current_time - start_time
+    
+    if elapsed_time >=interval:
+        start_time = time.time()
+        detector.work()
         
-    while(True):
-        current_time = time.time()
-        elapsed_time = current_time - start_time
-        
-        if elapsed_time >=interval:
-            start_time = time.time()
-            detector.work()
-
-        time.sleep(0.001)
+    listener = pynput.keyboard.Listener(on_release=release)
+    listener.start()
+    listener.join()
 
