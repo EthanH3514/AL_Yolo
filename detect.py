@@ -4,14 +4,20 @@ from pathlib import Path
 from mouse_control import set_global_var
 import torch
 from models.common import DetectMultiBackend
-from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadScreenshots
+from utils.dataloaders import LoadScreenshots
 from utils.general import (LOGGER, Profile, check_img_size, check_requirements, colorstr, cv2,
                            increment_path, non_max_suppression, scale_boxes, strip_optimizer)
 from utils.plots import Annotator, colors
 from utils.torch_utils import select_device
+import time
+import dxcam
+from Capture import LoadScreen
+import queue
 
 ROOT = os.getcwd()
-# ROOT = 'E:/code/AL_Yolo'
+
+frame_cnt = 0
+Q_frame = queue.Queue()
 
 class YOLOv5Detector:
     def __init__(
@@ -92,13 +98,19 @@ class YOLOv5Detector:
         # Dataloader
         bs = 1  # batch_size
         
-        dataset = LoadScreenshots(source, img_size=imgsz, stride=stride, auto=pt)
+        dataset = LoadScreen(stride=stride, auto=pt)
+        # dataset = LoadScreenshots(source, img_size=imgsz, stride=stride, auto=pt)
         
         vid_path, vid_writer = [None] * bs, [None] * bs
 
         # Run inference
         model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
         seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
+        
+        #define flag
+        if_capture_key_q = False
+        
+        
         for path, im, im0s, vid_cap, s in dataset:
             with dt[0]:
                 im = torch.from_numpy(im).to(model.device)
@@ -115,9 +127,19 @@ class YOLOv5Detector:
             # NMS
             with dt[2]:
                 pred = non_max_suppression(pred, self.conf_thres, self.iou_thres, self.classes, self.agnostic_nms, max_det=self.max_det)
-
+            
+            #quit
+            if if_capture_key_q:
+                break
+            
             # Process predictions
             for i, det in enumerate(pred):  # per image
+                
+                #quit
+                if if_capture_key_q:
+                    break
+                
+                
                 seen += 1
                 p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
@@ -149,34 +171,33 @@ class YOLOv5Detector:
                         windows.append(p)
                         cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
                         cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
+                    
+                    # frame
+                    now_time = time.time()
+                    global Q_frame, frame_cnt
+                    frame_cnt += 1
+                    if frame_cnt > 30:
+                        
+                        now_time = time.time()
+                        if not Q_frame.empty():
+                            that_time = Q_frame.get_nowait()
+                            fps = frame_cnt / (now_time - that_time)
+                            cv2.setWindowTitle(str(p), str(fps))
+                        Q_frame.put(now_time)
+                        frame_cnt = 0
+                        
                     cv2.imshow(str(p), im0)
-                    cv2.waitKey(1)  # 1 millisecond
-
-                # Save results (image with detections)
-                if save_img:
-                    if dataset.mode == 'image':
-                        cv2.imwrite(save_path, im0)
-                    else:  # 'video' or 'stream'
-                        if vid_path[i] != save_path:  # new video
-                            vid_path[i] = save_path
-                            if isinstance(vid_writer[i], cv2.VideoWriter):
-                                vid_writer[i].release()  # release previous video writer
-                            if vid_cap:  # video
-                                fps = vid_cap.get(cv2.CAP_PROP_FPS)
-                                w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                                h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                            else:  # stream
-                                fps, w, h = 30, im0.shape[1], im0.shape[0]
-                            save_path = str(Path(save_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
-                            vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
-                        vid_writer[i].write(im0)
+                    
+                    #capture q
+                    key = cv2.waitKey(1)
+                    if key == ord('q'):
+                        if_capture_key_q = True
+                        cv2.destroyAllWindows()
+                        break
 
         # Print results
         t = tuple(x.t / seen * 1E3 for x in dt)  # speeds per image
         LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
-        if self.save_txt or save_img:
-            s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if self.save_txt else ''
-            LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
         if self.update:
             strip_optimizer(self.weights[0])  # update model (to fix SourceChangeWarning)
 

@@ -34,6 +34,7 @@ from utils.general import (DATASETS_DIR, LOGGER, NUM_THREADS, TQDM_BAR_FORMAT, c
                            check_yaml, clean_str, cv2, is_colab, is_kaggle, segments2boxes, unzip_file, xyn2xy,
                            xywh2xyxy, xywhn2xyxy, xyxy2xywhn)
 from utils.torch_utils import torch_distributed_zero_first
+import time
 
 # Parameters
 HELP_URL = 'See https://docs.ultralytics.com/yolov5/tutorials/train_custom_data'
@@ -224,9 +225,12 @@ class LoadScreenshots:
 
     def __next__(self):
         # mss screen capture: get raw pixels from the screen as np array
+        
+        # test time use
+        now_time = time.time()
+        
         im0 = np.array(self.sct.grab(self.monitor))[:, :, :3]  # [:, :, :3] BGRA to BGR
         s = f'screen {self.screen} (LTWH): {self.left},{self.top},{self.width},{self.height}: '
-
         if self.transforms:
             im = self.transforms(im0)  # transforms
         else:
@@ -234,6 +238,12 @@ class LoadScreenshots:
             im = im.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
             im = np.ascontiguousarray(im)  # contiguous
         self.frame += 1
+        
+        # test time use
+        that_time = time.time()
+        print("Grab takes {:.2f} ms".format((that_time-now_time)*1E3))
+        # print(im0)
+        
         return str(self.screen), im, im0, None, s  # screen, img, original img, im0s, s
 
 
@@ -277,7 +287,7 @@ class LoadImages:
     def __iter__(self):
         self.count = 0
         return self
-
+        
     def __next__(self):
         if self.count == self.nf:
             raise StopIteration
@@ -602,7 +612,7 @@ class LoadImagesAndLabels(Dataset):
         if not cache:
             LOGGER.info(f'{prefix}{mem_required / gb:.1f}GB RAM required, '
                         f'{mem.available / gb:.1f}/{mem.total / gb:.1f}GB available, '
-                        f"{'caching images ✅' if cache else 'not caching images ⚠️'}")
+                        f"{'caching images ?' if cache else 'not caching images ??'}")
         return cache
 
     def cache_labels(self, path=Path('./labels.cache'), prefix=''):
