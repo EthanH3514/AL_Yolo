@@ -348,7 +348,9 @@ class DetectMultiBackend(nn.Module):
             stride = max(int(model.stride.max()), 32)  # model stride
             names = model.module.names if hasattr(model, 'module') else model.names  # get class names
             model.half() if fp16 else model.float()
-            self.model = model  # explicitly assign for to(), cpu(), cuda(), half()
+            #modified
+            self.model = model #torch.compile(model)  # explicitly assign for to(), cpu(), cuda(), half()
+            torch.backends.cudnn.benchmark = True
         elif jit:  # TorchScript
             LOGGER.info(f'Loading {w} for TorchScript inference...')
             extra_files = {'config.txt': ''}  # model metadata
