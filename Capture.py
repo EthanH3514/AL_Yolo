@@ -1,7 +1,6 @@
 import dxcam
 import pyautogui
-from utils.augmentations import (Albumentations, augment_hsv, classify_albumentations, classify_transforms, copy_paste,
-                                 letterbox, mixup, random_perspective)
+from utils.augmentations import letterbox
 import numpy as np
 import time
 
@@ -35,7 +34,7 @@ class LoadScreen:
         return self
 
     def __next__(self):
-        now_time = time.time()
+        # now_time = time.time()
         
         im0 = np.array(self.camera.grab(region=self.region))
         while im0.any() == None:
@@ -51,7 +50,7 @@ class LoadScreen:
         self.frame += 1
         
         that_time = time.time()
-        print("Grab takes {:.2f} ms".format((that_time-now_time)*1E3))
+        # print("Grab takes {:.2f} ms".format((that_time-now_time)*1E3))
         # print(im0)
         
         return str(self.screen), im, im0, None, s

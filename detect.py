@@ -185,8 +185,11 @@ class YOLOv5Detector:
                             cv2.setWindowTitle(str(p), str(fps))
                         Q_frame.put(now_time)
                         frame_cnt = 0
-                        
+                    
+                    # now_time = time.time()
                     cv2.imshow(str(p), im0)
+                    # that_time = time.time()
+                    # print("imgShow takes {:.2f} ms".format((that_time-now_time)*1E3))
                     
                     #capture q
                     key = cv2.waitKey(1)
