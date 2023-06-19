@@ -4,13 +4,10 @@ from pathlib import Path
 from mouse_control import set_global_var
 import torch
 from models.common import DetectMultiBackend
-from utils.dataloaders import LoadScreenshots
-from utils.general import (LOGGER, Profile, check_img_size, check_requirements, colorstr, cv2,
-                           increment_path, non_max_suppression, scale_boxes, strip_optimizer)
+from utils.general import (LOGGER, Profile, check_img_size, check_requirements, cv2, non_max_suppression, scale_boxes, strip_optimizer)
 from utils.plots import Annotator, colors
 from utils.torch_utils import select_device
 import time
-import dxcam
 from Capture import LoadScreen
 import queue
 
@@ -23,7 +20,6 @@ class YOLOv5Detector:
     def __init__(
         self,
         weights=os.path.join(ROOT, 'best.pt'),
-        source=os.path.join(ROOT, 'image_cache'),
         data=os.path.join(ROOT, 'AL_data.yaml'),
         imgsz=(640, 640),
         conf_thres=0.25,
@@ -31,27 +27,17 @@ class YOLOv5Detector:
         max_det=1000,
         device='',
         view_img=True,
-        save_txt=False,
-        save_conf=False,
-        save_crop=False,
-        nosave=True,
         classes=None,
         agnostic_nms=False,
         augment=False,
-        visualize=False,
         update=False,
-        project=os.path.join(ROOT, 'runs/detect'),
-        name='exp',
-        exist_ok=False,
         line_thickness=3,
         hide_labels=False,
         hide_conf=False,
         half=False,
-        dnn=False,
-        vid_stride=1
+        dnn=False
     ):
         self.weights = weights
-        self.source = source
         self.data = data
         self.imgsz = imgsz
         self.conf_thres = conf_thres
@@ -59,35 +45,18 @@ class YOLOv5Detector:
         self.max_det = max_det
         self.device = device
         self.view_img = view_img
-        self.save_txt = save_txt
-        self.save_conf = save_conf
-        self.save_crop = save_crop
-        self.nosave = nosave
         self.classes = classes
         self.agnostic_nms = agnostic_nms
         self.augment = augment
-        self.visualize = visualize
         self.update = update
-        self.project = project
-        self.name = name
-        self.exist_ok = exist_ok
         self.line_thickness = line_thickness
         self.hide_labels = hide_labels
         self.hide_conf = hide_conf
         self.half = half
         self.dnn = dnn
-        self.vid_stride = vid_stride
     
     @staticmethod
     def run(self):
-        source = str(self.source)
-        save_img = not self.nosave and not source.endswith('.txt')  # save inference images
-
-        # Directories
-        save_dir = increment_path(Path(self.project) / self.name, exist_ok=self.exist_ok)  # increment run
-        save_dir = Path('runs/detect')
-        (save_dir / 'labels' if self.save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
-
         # Load model
         device = select_device('cuda:0')
         model = DetectMultiBackend(self.weights, device=device, dnn=self.dnn, data=self.data, fp16=self.half)
@@ -99,17 +68,13 @@ class YOLOv5Detector:
         bs = 1  # batch_size
         
         dataset = LoadScreen(stride=stride, auto=pt)
-        # dataset = LoadScreenshots(source, img_size=imgsz, stride=stride, auto=pt)
-        
-        vid_path, vid_writer = [None] * bs, [None] * bs
 
         # Run inference
         model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
         seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
         
-        #define flag
+        # Define quit flag
         if_capture_key_q = False
-        
         
         for path, im, im0s, vid_cap, s in dataset:
             with dt[0]:
@@ -121,14 +86,13 @@ class YOLOv5Detector:
 
             # Inference
             with dt[1]:
-                visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if self.visualize else False
-                pred = model(im, augment=self.augment, visualize=visualize)
+                pred = model(im, augment=self.augment, visualize=False)
 
             # NMS
             with dt[2]:
                 pred = non_max_suppression(pred, self.conf_thres, self.iou_thres, self.classes, self.agnostic_nms, max_det=self.max_det)
             
-            #quit
+            # Quit
             if if_capture_key_q:
                 break
             
@@ -156,12 +120,10 @@ class YOLOv5Detector:
                         s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
             
                     # Write results
-                    
                     for *xyxy, conf, cls in reversed(det):
                         c = int(cls)  # integer class
                         label = None if self.hide_labels else (names[c] if self.hide_conf else f'{names[c]} {conf:.2f}')
                         annotator.box_label(xyxy, label, color=colors(c, True))
-                        # print('detect.py ', xyxy)
                         set_global_var(xyxy)
                         
                 # Stream results
@@ -172,7 +134,7 @@ class YOLOv5Detector:
                         cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
                         cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
                     
-                    # frame
+                    # FPS show
                     now_time = time.time()
                     global Q_frame, frame_cnt
                     frame_cnt += 1
@@ -191,7 +153,7 @@ class YOLOv5Detector:
                     # that_time = time.time()
                     # print("imgShow takes {:.2f} ms".format((that_time-now_time)*1E3))
                     
-                    #capture q
+                    # Capture 'q'
                     key = cv2.waitKey(1)
                     if key == ord('q'):
                         if_capture_key_q = True

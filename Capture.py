@@ -2,7 +2,7 @@ import dxcam
 import pyautogui
 from utils.augmentations import letterbox
 import numpy as np
-import time
+# import time
 
 WIDTH, HEIGHT = pyautogui.size()
 CENTER = [WIDTH/2, HEIGHT/2]
@@ -49,7 +49,7 @@ class LoadScreen:
             im = np.ascontiguousarray(im)
         self.frame += 1
         
-        that_time = time.time()
+        # that_time = time.time()
         # print("Grab takes {:.2f} ms".format((that_time-now_time)*1E3))
         # print(im0)
         
