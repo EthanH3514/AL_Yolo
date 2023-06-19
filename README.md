@@ -14,6 +14,8 @@
 使用[Yolov5](https://github.com/ultralytics/yolov5) 的train.py文件，修改数据集路径参数
 #### 训练日志
 ![log](https://user-images.githubusercontent.com/103171084/240091844-4bfd3af3-9d92-412e-8697-6d3ec8adc904.png)
+
+训练日志以及过程的数据存放在`exp`目录下
 ### 屏幕捕捉
 ~~尝试手写一个Capturer类，但是效率不高~~
 
