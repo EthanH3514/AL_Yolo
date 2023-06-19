@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 import threading
 import time
-import os
 import pyautogui
-import math
-from pynput import mouse, keyboard
-from ctypes import CDLL
-import numpy as np
 from mouse_driver.MouseMove import mouse_move
 
 
