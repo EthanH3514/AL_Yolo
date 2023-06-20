@@ -9,12 +9,9 @@ from utils.plots import Annotator, colors
 from utils.torch_utils import select_device
 import time
 from Capture import LoadScreen
-import queue
 
 ROOT = os.getcwd()
 
-frame_cnt = 0
-Q_frame = queue.Queue()
 
 class YOLOv5Detector:
     def __init__(
@@ -58,7 +55,7 @@ class YOLOv5Detector:
     @staticmethod
     def run(self):
         # Load model
-        device = select_device('cuda:0')
+        device = select_device('0')
         model = DetectMultiBackend(self.weights, device=device, dnn=self.dnn, data=self.data, fp16=self.half)
         stride, names, pt = model.stride, model.names, model.pt
         imgsz = self.imgsz
@@ -75,6 +72,9 @@ class YOLOv5Detector:
         
         # Define quit flag
         if_capture_key_q = False
+        
+        frame_cnt = 0
+        that_time = 0
         
         for path, im, im0s, vid_cap, s in dataset:
             with dt[0]:
@@ -129,29 +129,25 @@ class YOLOv5Detector:
                 # Stream results
                 im0 = annotator.result()
                 if self.view_img:
-                    if platform.system() == 'Linux' and p not in windows:
-                        windows.append(p)
-                        cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
-                        cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
+                    # if platform.system() == 'Linux' and p not in windows:
+                    #     windows.append(p)
+                    #     cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
+                    #     cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
                     
                     # FPS show
                     now_time = time.time()
-                    global Q_frame, frame_cnt
                     frame_cnt += 1
-                    if frame_cnt > 30:
-                        
-                        now_time = time.time()
-                        if not Q_frame.empty():
-                            that_time = Q_frame.get_nowait()
-                            fps = frame_cnt / (now_time - that_time)
-                            cv2.setWindowTitle(str(p), str(fps))
-                        Q_frame.put(now_time)
+                    duration_time = now_time - that_time
+                    fps = frame_cnt / duration_time
+                    cv2.setWindowTitle(str(p),str(fps))
+                    if frame_cnt >= 50:
+                        that_time = now_time
                         frame_cnt = 0
                     
-                    # now_time = time.time()
+                    # time_1 = time.time()
                     cv2.imshow(str(p), im0)
-                    # that_time = time.time()
-                    # print("imgShow takes {:.2f} ms".format((that_time-now_time)*1E3))
+                    # time_2 = time.time()
+                    # print("imgShow takes {:.2f} ms".format((time_2-time_1)*1E3))
                     
                     # Capture 'q'
                     key = cv2.waitKey(1)
