@@ -2,15 +2,10 @@ import dxcam
 import pyautogui
 from utils.augmentations import letterbox
 import numpy as np
-# import time
 
 WIDTH, HEIGHT = pyautogui.size()
 CENTER = [WIDTH/2, HEIGHT/2]
-FOV = 110
-DPI = 800
-MOUSE_SENSITIVITY = 5
 SIZE = 640
-SMOOTH = 1.2
 LEFT = int(CENTER[0] - SIZE / 2)
 TOP = int(CENTER[1] - SIZE / 2)
 REGION = (LEFT, TOP, LEFT+SIZE, TOP+SIZE)
