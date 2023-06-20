@@ -5,7 +5,7 @@ import pyautogui
 from mouse_driver.MouseMove import mouse_move
 
 
-# 全局变量传送
+# Global variable
 global_xyxy = []
 
 lock = threading.Lock()
@@ -41,11 +41,10 @@ def get_vector(target):
         target[i] *= SMOOTH / MOUSE_SENSITIVITY
     return target
 
-# quit_signal
+# Quit signal
 quit_signal = True
 
 def monitor_global_var():
-    global Q_quit
     
     location = []
     
@@ -53,36 +52,22 @@ def monitor_global_var():
     while quit_signal:
         
         xyxy = get_global_var()
+            
         if len(xyxy) < 4:
             xyxy.clear()
-            time.sleep(0.001)
-            continue
-        if xyxy !=[]:
+            
+        elif xyxy !=[]:
             for item in xyxy:
                 location.append(float(item))
-            if len(location) < 4:
-                xyxy.clear()
-                location.clear()
-                time.sleep(0.001)
-                continue
-            if abs(location[3] - location[1]) < 10:
-                xyxy.clear()
-                location.clear()
-                time.sleep(0.001)
+            if len(location) >= 4 and abs(location[3] - location[1]) >= 10:
+                target = get_target(location)
                 
-            target = get_target(location)
-            
-            if abs(target[0]) < 10 and abs(target[1]) < 10:
-                xyxy.clear()
-                location.clear()
-                time.sleep(0.001)
-                continue
-            
-            vector = get_vector(target)
-
-
-            print(target)
-            mouse_move(vector[0], vector[1])
+                if abs(target[0]) >= 10 and abs(target[1]) >= 10:
+                    vector = get_vector(target)
+                    
+                    print(target)
+                    
+                    mouse_move(vector[0], vector[1])
             
             location.clear()
             xyxy.clear()
