@@ -18,6 +18,7 @@ def release(key):
     if key == pynput.keyboard.Key.home:  # Home
         winsound.Beep(400, 200)
         mouse_control.run()
+        return False
     elif key == pynput.keyboard.Key.end:  # End
         winsound.Beep(600, 200)
         mouse_control.stop()
@@ -28,8 +29,11 @@ if __name__ == '__main__':
     
     listener = pynput.keyboard.Listener(on_release=release)
     listener.start()
+    listener.join()
     
     detector.work()
     
+    listener = pynput.keyboard.Listener(on_release=release)
+    listener.start()
     listener.join()
 
