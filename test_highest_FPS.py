@@ -1,10 +1,13 @@
-import dxcam
 import time
 import cv2
 import pyautogui
-import numpy as np
+import dxshot
+# import sys
+# import numpy as np
+# from PIL import Image
+# import dxcam
 
-camera = dxcam.create(output_color="BGR")
+
 
 WIDTH, HEIGHT = pyautogui.size()
 CENTER = [WIDTH/2, HEIGHT/2]
@@ -13,25 +16,35 @@ LEFT = int(CENTER[0] - SIZE / 2)
 TOP = int(CENTER[1] - SIZE / 2)
 REGION = (LEFT, TOP, LEFT+SIZE, TOP+SIZE)
 
+
 if __name__ == '__main__':
     img_count = 0
-    that_time = time.time()
     Flag = True
     region = REGION
-    while(Flag):
-        img = np.array(camera.grab(region=region))
-        if img.any() == None:
+    camera = dxshot.create(region=region, output_color="BGR")
+    that_time = time.perf_counter()
+    while Flag:
+        img = camera.grab()
+        if img is None:
             continue
         img_count += 1
-        this_time = time.time()
+        this_time = time.perf_counter()
         duration_time = this_time - that_time
-        if duration_time >= 10:
+        if duration_time >= 1:
             that_time = this_time
+            cv2.setWindowTitle('', str(img_count/duration_time))
             img_count = 0
+            
+        # sys.stdout.write("FPS is {:.2f}\n".format(img_count/duration_time))
+        # sys.stdout.flush()
+        
+        # start = time.perf_counter()
         cv2.imshow('', img)
-        cv2.setWindowTitle('', str(img_count/duration_time))
-        print(img_count)
-        # print("FPS is {:.2f}".format(img_count/duration_time))
+        
+        # end = time.perf_counter()
+        
+        # sys.stdout.write("Show a image takes {:.2f}ms\n".format((end-start)*1E3))
+        
         
         key = cv2.waitKey(1)
         if key == ord('q'):

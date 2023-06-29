@@ -1,4 +1,4 @@
-import dxcam
+import dxshot
 import pyautogui
 from utils.augmentations import letterbox
 import numpy as np
@@ -15,7 +15,7 @@ class LoadScreen:
         self.screen = 0
         self.img_size = img_size
         self.region = region
-        self.camera = dxcam.create(output_color="BGR")
+        self.camera = dxshot.create(output_color="BGR")
         self.frame = 0
         self.stride = stride
         self.auto = auto
