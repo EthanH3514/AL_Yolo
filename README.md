@@ -21,7 +21,9 @@
 
 ~~转为使用yolov5自带的`LoadScreenShot`函数，修改默认参数(传入图像尺寸)~~
 
-使用[DXcam](https://github.com/ra1nty/DXcam)截图来替代yolov5自带的mss截图，将截图时间从15ms优化到5ms
+~~使用[DXcam](https://github.com/ra1nty/DXcam)截图来替代yolov5自带的mss截图，将截图时间从15ms优化到5ms~~
+
+使用[Dxshot](https://github.com/AI-M-BOT/DXcam/releases)将截图时间进一步优化
 
 同时通过多开一个线程给监视器来监视全局变量的变化来跨文件传参
 
