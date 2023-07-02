@@ -22,9 +22,10 @@ if __name__ == '__main__':
     Flag = True
     region = REGION
     camera = dxshot.create(region=region, output_color="BGR")
+    camera.start(target_fps=144, video_mode=True)
     that_time = time.perf_counter()
     while Flag:
-        img = camera.grab()
+        img = camera.get_latest_frame()
         if img is None:
             continue
         img_count += 1
