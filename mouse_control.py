@@ -1,8 +1,11 @@
 import threading
 import time
 import pyautogui
-from mouse_driver.MouseMove import mouse_move
+# from mouse_driver.MouseMove import ghub_mouse_move as mouse_move
+from mouse_driver.MouseMove import pygui_mouse_move as mouse_move
 
+pyautogui.PAUSE = 0
+pyautogui.FAILSAFE = False
 
 # Global variable
 global_xyxy = []
@@ -74,14 +77,13 @@ def monitor_global_var():
         time.sleep(0.001)
 
 
-monitor_thread = threading.Thread(target=monitor_global_var)
 
 def run():
+    monitor_thread = threading.Thread(target=monitor_global_var)
     monitor_thread.start()
 
 
 def stop():
     global quit_signal
     quit_signal = False
-    monitor_thread.join()
     

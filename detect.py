@@ -12,6 +12,7 @@ from Capture import LoadScreen
 
 ROOT = os.getcwd()
 
+should_stop = False
 
 class YOLOv5Detector:
     def __init__(
@@ -68,10 +69,9 @@ class YOLOv5Detector:
 
         # Run inference
         model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
-        seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
+        dt = (Profile(), Profile(), Profile())
         
-        # Define quit flag
-        if_capture_key_q = False
+        global should_stop
         
         frame_cnt = 0
         that_time = 0
@@ -93,19 +93,20 @@ class YOLOv5Detector:
                 pred = non_max_suppression(pred, self.conf_thres, self.iou_thres, self.classes, self.agnostic_nms, max_det=self.max_det)
             
             # Quit
-            if if_capture_key_q:
+            if should_stop:
+                cv2.destroyAllWindows()
                 break
             
             # Process predictions
             for i, det in enumerate(pred):  # per image
                 
                 #quit
-                if if_capture_key_q:
+                if should_stop:
+                    cv2.destroyAllWindows()
                     break
                 
                 
-                seen += 1
-                p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
+                p, im0 = path, im0s.copy()
 
                 p = Path(p)  # to Path
                 s += '%gx%g ' % im.shape[2:]  # print string
@@ -129,11 +130,6 @@ class YOLOv5Detector:
                 # Stream results
                 im0 = annotator.result()
                 if self.view_img:
-                    # if platform.system() == 'Linux' and p not in windows:
-                    #     windows.append(p)
-                    #     cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
-                    #     cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
-                    
                     # FPS show
                     now_time = time.time()
                     frame_cnt += 1
@@ -146,19 +142,10 @@ class YOLOv5Detector:
                     
                     # time_1 = time.time()
                     cv2.imshow(str(p), im0)
+                    cv2.waitKey(1)
                     # time_2 = time.time()
                     # print("imgShow takes {:.2f} ms".format((time_2-time_1)*1E3))
                     
-                    # Capture 'q'
-                    key = cv2.waitKey(1)
-                    if key == ord('q'):
-                        if_capture_key_q = True
-                        cv2.destroyAllWindows()
-                        break
-
-        # Print results
-        t = tuple(x.t / seen * 1E3 for x in dt)  # speeds per image
-        LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
         if self.update:
             strip_optimizer(self.weights[0])  # update model (to fix SourceChangeWarning)
 
@@ -167,4 +154,7 @@ class YOLOv5Detector:
         check_requirements(exclude=('tensorboard', 'thop'))
         self.run(self)
         
-        
+    def stop(self):
+        global should_stop
+        should_stop = True
+    

@@ -6,5 +6,7 @@
     "python.analysis.extraPaths": [
         "./yolov5"
     ],
-    "files.autoGuessEncoding": true
+    "files.autoGuessEncoding": true,
+    "workbench.preferredDarkColorTheme": "Default Dark Modern",
+    "workbench.colorTheme": "Default Light Modern"
 }
