@@ -1,8 +1,8 @@
 import threading
 import time
 import pyautogui
-# from mouse_driver.MouseMove import ghub_mouse_move as mouse_move
-from mouse_driver.MouseMove import pygui_mouse_move as mouse_move
+from mouse_driver.MouseMove import ghub_mouse_move as mouse_move
+# from mouse_driver.MouseMove import pygui_mouse_move as mouse_move
 
 pyautogui.PAUSE = 0
 pyautogui.FAILSAFE = False
