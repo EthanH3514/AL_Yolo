@@ -88,5 +88,8 @@ from mouse_driver.MouseMove import pygui_mouse_move as mouse_move # pyautogui
 - [ ] 生成安装包
 - [ ] 一帧拉枪(太难，与内存挂原理不同)
 
-
 ### 如果有帮到你就点一个star吧?
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=EthanH3514/AL_Yolo&type=Date)](https://star-history.com/#EthanH3514/AL_Yolo&Date)
