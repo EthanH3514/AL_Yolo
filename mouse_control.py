@@ -26,8 +26,8 @@ def get_global_var():
 
 WIDTH, HEIGHT = pyautogui.size()
 CENTER = [WIDTH/2, HEIGHT/2]
-FOV = 110
-DPI = 800
+# FOV = 110
+# DPI = 800
 MOUSE_SENSITIVITY = 5
 SIZE = 640
 SMOOTH = 1.2
