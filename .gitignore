@@ -4,3 +4,4 @@ test_highest_FPS.py
 test_mss.py
 train_AL.py
 .vscode
+.idea/
