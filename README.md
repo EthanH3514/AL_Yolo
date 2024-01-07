@@ -1,17 +1,42 @@
 ### 一个基于yolov5的Apex Legend AI辅瞄外挂
 ## 环境依赖
 * 罗技驱动(版本不超过21.9)
-* python3.10
+* python>=3.10
 * CUDA 11
-* opencv
 * torch 2.0
+* 更多依赖的在 `requirements.txt` 中
+
+## 快速开始
+> 默认在windows系统下
+
+#### 配置[scoop](https://scoop.sh/)(非常好用的windows包管理器)
+打开PowerShell terminal(version 5.1 or later)
+```
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+> Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+```
+
+#### 配置anaconda
+```
+scoop install anaconda3
+```
+
+#### 创建conda环境并安装依赖
+在项目文件夹下
 
 ```
+conda create -n apex
+conda activate apex
 pip install -r requirements.txt
 ```
 
-## 项目流程图
-![项目流程图](https://user-images.githubusercontent.com/103171084/240091322-a9e21a41-faa8-4ce8-96b5-0be957c86012.png)
+#### 运行
+```
+python apex.py
+```
+
+<!-- ## 项目流程图
+![项目流程图](https://user-images.githubusercontent.com/103171084/240091322-a9e21a41-faa8-4ce8-96b5-0be957c86012.png) -->
 ### 模型训练
 #### 数据集地址
 [https://github.com/goldjee/AL-YOLO-dataset](https://github.com/goldjee/AL-YOLO-dataset)
@@ -22,9 +47,6 @@ pip install -r requirements.txt
 
 训练日志以及过程的数据存放在`exp`目录下
 ### 屏幕捕捉
-~~尝试手写一个Capturer类，但是效率不高~~
-
-~~转为使用yolov5自带的`LoadScreenShot`函数，修改默认参数(传入图像尺寸)~~
 
 ~~使用[DXcam](https://github.com/ra1nty/DXcam)截图来替代yolov5自带的mss截图，将截图时间从15ms优化到5ms~~
 
@@ -36,11 +58,8 @@ pip install -r requirements.txt
 
 ### 鼠标控制
 #### 如何控制鼠标
-~~大部分FPS游戏将win函数屏蔽了，所以转为操纵鼠标驱动来模拟鼠标输入。~~
 
-~~Apex并未屏蔽win函数，仍然可以使用win函数控制鼠标移动，后续会加入这个选项，目前暂时还是使用鼠标驱动。~~
-
-加入了win函数控制鼠标移动的选项，但是在训练场里试了试没有效果，有可能游戏更新之后已经把这个给修复掉了(？)，所以默认还是鼠标驱动控制鼠标
+加入了win函数控制鼠标移动的选项，但是在训练场里试了试没有效果，有可能游戏更新之后已经把这个给修复掉了(？)，而且正常情况下win函数的效率太低，所以默认还是鼠标驱动控制鼠标
 
 操纵罗技鼠标驱动的文件之前有人写过，就是`mouse_driver`中的`ghub_mouse.dll`
 
@@ -62,12 +81,12 @@ pip install -r requirements.txt
 - 管理员模式打开一个终端，进入项目文件夹下运行`python apex.py`
 - 切换鼠标操纵方式(罗技驱动/pyautogui)，在`mouse_control.py`中将
 ```python
-from mouse_driver.MouseMove import ghub_mouse_move as mouse_move # logi
+from mouse_driver.MouseMove import ghub_mouse_move as mouse_move # logi驱动
 # from mouse_driver.MouseMove import pygui_mouse_move as mouse_move # pyautogui
 ```
 切换成
 ```python
-# from mouse_driver.MouseMove import ghub_mouse_move as mouse_move # logi
+# from mouse_driver.MouseMove import ghub_mouse_move as mouse_move # logi驱动
 from mouse_driver.MouseMove import pygui_mouse_move as mouse_move # pyautogui
 ```
 
@@ -86,9 +105,9 @@ from mouse_driver.MouseMove import pygui_mouse_move as mouse_move # pyautogui
 - [ ] 数据集清洗，扩充，加入敌我识别
 - [x] 做个前端
 - [ ] 生成安装包
-- [ ] 一帧拉枪(太难，与内存挂原理不同)
+- [ ] ~~一帧拉枪~~(太难，与内存挂原理不同)
 
-### 如果有帮到你就点一个star吧?
+### 如果有帮到你就点一个star吧😃
 
 ## Star History
 
