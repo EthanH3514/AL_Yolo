@@ -79,7 +79,7 @@ python apex.py
 - 部署环境依赖
 - 修改参数(目前在`mouse_control.py`下)
 - 管理员模式打开一个终端，进入项目文件夹下运行`python apex.py`
-- 切换鼠标操纵方式(罗技驱动/pyautogui)，在`mouse_control.py`中将
+- 切换鼠标操纵方式(罗技驱动/pyautogui)(非必要)，在`mouse_control.py`中将
 ```python
 from mouse_driver.MouseMove import ghub_mouse_move as mouse_move # logi驱动
 # from mouse_driver.MouseMove import pygui_mouse_move as mouse_move # pyautogui
