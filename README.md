@@ -1,7 +1,7 @@
 # 一个基于yolov5的Apex Legend AI辅瞄外挂
 ## 环境依赖
 * 罗技驱动(版本不超过21.9)
-* python>=3.10
+* python>=3.10 && python <3.11
 * CUDA 11
 * torch 2.0
 * 更多依赖的在 `requirements.txt` 中
