@@ -1,12 +1,12 @@
 # 一个基于yolov5的Apex Legend AI辅瞄外挂
-## 环境依赖
+## 🅿环境依赖
 * 罗技驱动(版本不超过21.9)
 * python>=3.10 && python <3.11
 * CUDA 11
 * torch 2.0
 * 更多依赖的在 `requirements.txt` 中
 
-## 快速开始
+## ♿快速开始
 > 默认在windows系统下
 
 #### 配置[scoop](https://scoop.sh/)(非常好用的windows包管理器)
@@ -75,7 +75,7 @@ python apex.py
 
 目前采用的是将准星逐步移动到目标身上的方法，牺牲了一点点效率，达到了准星吸附一样的效果。
 
-### 如何使用
+### 🤔如何使用
 - 将代码下载到本地
 - 部署环境依赖
 - 修改参数(目前在`mouse_control.py`下)
@@ -91,7 +91,7 @@ from mouse_driver.MouseMove import ghub_mouse_move as mouse_move # logi驱动
 from mouse_driver.MouseMove import pygui_mouse_move as mouse_move # pyautogui
 ```
 
-### 后续改进
+### 🎯后续改进
 
 - [x] 截图方式优化
 - [ ] ~~推理文件多线程并行~~(python多线程没啥用)
@@ -108,8 +108,8 @@ from mouse_driver.MouseMove import pygui_mouse_move as mouse_move # pyautogui
 - [ ] 生成安装包
 - [ ] ~~一帧拉枪~~(太难，与内存挂原理不同)
 
-### 如果有帮到你就点一个star吧😃
+### 🤩如果有帮到你就点一个star吧
 
-## Star History
+## 🎉Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=EthanH3514/AL_Yolo&type=Date)](https://star-history.com/#EthanH3514/AL_Yolo&Date)
