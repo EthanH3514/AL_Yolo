@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 from detect import YOLOv5Detector
-import pynput
-import winsound
-import mouse_control
+# import pynput
+# import winsound
+# import mouse_control
 import tkinter as tk
 import threading
 
 
 detector = YOLOv5Detector(
-    weights='best.pt',
-    data='AL_data.yaml',
+    weights='./weights/best.pt',
+    data='./configs/AL_data.yaml',
     imgsz=(640, 640),
     conf_thres=0.45,
     iou_thres=0.4,
@@ -17,7 +17,7 @@ detector = YOLOv5Detector(
 )
 
 is_initiate = False
-is_start = False
+is_start_mouse = False
 
 def enable_button(button):
     button.config(state=tk.NORMAL)
@@ -42,36 +42,32 @@ def end():
         root.after(1000, lambda: enable_button(end_button))
         print("目标检测已停止")
 
-def start():
-    global is_start
-    if not is_start:
-        winsound.Beep(400, 200)
-        mouse_control.run()
-        is_start = True
-        start_button.config(state=tk.DISABLED)
-        root.after(1000, lambda: enable_button(start_button))
-        print("鼠标锁定已开启")
-        
-def stop():
-    global is_start
-    if is_start:
-        winsound.Beep(600, 200)
-        mouse_control.stop()
-        is_start = False
-        stop_button.config(state=tk.DISABLED)
-        root.after(1000, lambda: enable_button(stop_button))
-        print("鼠标锁定已关闭")
-
 def release():
-    global is_start, is_initiate
-    if is_start:
-        mouse_control.stop()
-        is_start = False
+    # global is_start, is_initiate
+    global is_initiate
+    # if is_start:
+        # mouse_control.stop()
+        # is_start = False
     if is_initiate:
         detector.stop()
         is_initiate = False
     root.destroy()
     print("关闭程序")
+
+def start_mouse():
+    global is_start_mouse
+    if not is_start_mouse:
+        detector.start_mouse()
+        is_start_mouse = True
+        print("鼠标锁定已开启")
+
+def stop_mouse():
+    global is_start_mouse
+    if is_start_mouse:
+        detector.stop_mouse()
+        is_start_mouse = False
+        print("鼠标锁定已关闭")
+
 
 if __name__ == '__main__':
     root = tk.Tk()
@@ -81,9 +77,9 @@ if __name__ == '__main__':
     initiate_button.grid(row=0, column=0)
     end_button = tk.Button(root, text="停止目标检测", command=end)
     end_button.grid(row=1, column=0)
-    start_button = tk.Button(root, text="开启鼠标锁定", command=start)
+    start_button = tk.Button(root, text="开启鼠标锁定", command=start_mouse)
     start_button.grid(row=0, column=1)
-    stop_button = tk.Button(root, text="暂停鼠标锁定", command=stop)
+    stop_button = tk.Button(root, text="暂停鼠标锁定", command=stop_mouse)
     stop_button.grid(row=1, column=1)
 
     release_button = tk.Button(root, text="退出", command=release)

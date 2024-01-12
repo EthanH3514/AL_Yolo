@@ -1,28 +1,11 @@
-import threading
-import time
+# import threading
+# import time
 import pyautogui
-from mouse_driver.MouseMove import ghub_mouse_move as mouse_move
+from mouse_driver.MouseMove import ghub_mouse_move
+import numpy as np
+import torch
 # from mouse_driver.MouseMove import pygui_mouse_move as mouse_move
 
-pyautogui.PAUSE = 0
-pyautogui.FAILSAFE = False
-
-# Global variable
-global_xyxy = []
-
-lock = threading.Lock()
-
-
-def set_global_var(value):
-    global global_xyxy
-    with lock:
-        global_xyxy = value
-
-def get_global_var():
-    global global_xyxy
-    with lock:
-        return global_xyxy
-    
 
 WIDTH, HEIGHT = pyautogui.size()
 CENTER = [WIDTH/2, HEIGHT/2]
@@ -32,58 +15,26 @@ MOUSE_SENSITIVITY = 5
 SIZE = 640
 SMOOTH = 1.2
 
+OFFSET = torch.tensor([SIZE / 2, SIZE / 2], device='cuda:0')
+
+MUL = 2 / MOUSE_SENSITIVITY
+
 print(CENTER, (WIDTH, HEIGHT))
 
-def get_target(location):
-    vector = [(location[0] + location[2]) / 2 - SIZE / 2, (location[1] + location[3]) / 2 - SIZE / 2]
-    return vector
+def move_to(xyxy):
 
-def get_vector(target):
-    for i in range(2):
-        target[i] *= SMOOTH / MOUSE_SENSITIVITY
-    return target
+    if len(xyxy) >= 4:
+        # stacked_array = np.stack([tensor.cpu().numpy() for tensor in xyxy])
+        # target = stacked_array.flatten()
+        top_left = torch.stack(xyxy[:2])
+        bottom_right = torch.stack(xyxy[2:])
+        # print("top_left is ", top_left)
+        # print("bottom_right is ", bottom_right)
+        target = ((top_left + bottom_right) / 2 - OFFSET) * MUL
 
-# Quit signal
-quit_signal = True
+        # print("target is ", target)
 
-def monitor_global_var():
-    
-    location = []
-    
-    global quit_signal
-    while quit_signal:
+        ghub_mouse_move(target[0].item(), target[1].item())
+        # ghub_mouse_move(x / MOUSE_SENSITIVITY * 2, y / MOUSE_SENSITIVITY * 2)
         
-        xyxy = get_global_var()
-            
-        if len(xyxy) < 4:
-            xyxy.clear()
-            
-        elif xyxy !=[]:
-            for item in xyxy:
-                location.append(float(item))
-            if len(location) >= 4 and abs(location[3] - location[1]) >= 10:
-                target = get_target(location)
-                
-                if abs(target[0]) >= 10 and abs(target[1]) >= 10:
-                    vector = get_vector(target)
-                    
-                    print(target)
-                    
-                    mouse_move(vector[0], vector[1])
-            
-            location.clear()
-            xyxy.clear()
-        
-        time.sleep(0.001)
-
-
-
-def run():
-    monitor_thread = threading.Thread(target=monitor_global_var)
-    monitor_thread.start()
-
-
-def stop():
-    global quit_signal
-    quit_signal = False
-    
+        # location.clear()

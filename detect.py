@@ -1,7 +1,7 @@
 import os
 import platform
 from pathlib import Path
-from mouse_control import set_global_var
+# from mouse_control import set_global_var
 import torch
 from models.common import DetectMultiBackend
 from utils.general import (LOGGER, Profile, check_img_size, check_requirements, cv2, non_max_suppression, scale_boxes, strip_optimizer)
@@ -9,30 +9,30 @@ from utils.plots import Annotator, colors
 from utils.torch_utils import select_device
 import time
 from Capture import LoadScreen
+from mouse_control import move_to
 
 ROOT = os.getcwd()
 
-should_stop = False
 
 class YOLOv5Detector:
     def __init__(
         self,
-        weights=os.path.join(ROOT, 'best.pt'),
-        data=os.path.join(ROOT, 'AL_data.yaml'),
+        weights='',
+        data='',
         imgsz=(640, 640),
         conf_thres=0.25,
         iou_thres=0.45,
         max_det=1000,
-        device='',
-        view_img=True,
+        device=0,
+        view_img=False, #changed
         classes=None,
         agnostic_nms=False,
         augment=False,
-        update=False,
+        # update=False,
         line_thickness=3,
         hide_labels=False,
         hide_conf=False,
-        half=False,
+        half=True,
         dnn=False
     ):
         self.weights = weights
@@ -46,21 +46,24 @@ class YOLOv5Detector:
         self.classes = classes
         self.agnostic_nms = agnostic_nms
         self.augment = augment
-        self.update = update
+        # self.update = update
         self.line_thickness = line_thickness
         self.hide_labels = hide_labels
         self.hide_conf = hide_conf
         self.half = half
         self.dnn = dnn
-    
+        self.should_stop = False  # flag to stop
+        self.is_enable_mouse_lock = False
+
     @staticmethod
     def run(self):
+        print(self.weights, self.data)
         # Load model
-        device = select_device('0')
+        device = select_device(0)
         model = DetectMultiBackend(self.weights, device=device, dnn=self.dnn, data=self.data, fp16=self.half)
         stride, names, pt = model.stride, model.names, model.pt
         imgsz = self.imgsz
-        imgsz = check_img_size(imgsz, s=stride)  # check image size
+        # imgsz = check_img_size(imgsz, s=stride)  # check image size
 
         # Dataloader
         bs = 1  # batch_size
@@ -70,8 +73,6 @@ class YOLOv5Detector:
         # Run inference
         model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
         dt = (Profile(), Profile(), Profile())
-        
-        global should_stop
         
         frame_cnt = 0
         that_time = 0
@@ -93,7 +94,7 @@ class YOLOv5Detector:
                 pred = non_max_suppression(pred, self.conf_thres, self.iou_thres, self.classes, self.agnostic_nms, max_det=self.max_det)
             
             # Quit
-            if should_stop:
+            if self.should_stop:
                 cv2.destroyAllWindows()
                 break
             
@@ -101,7 +102,7 @@ class YOLOv5Detector:
             for i, det in enumerate(pred):  # per image
                 
                 #quit
-                if should_stop:
+                if self.should_stop:
                     cv2.destroyAllWindows()
                     break
                 
@@ -125,29 +126,35 @@ class YOLOv5Detector:
                         c = int(cls)  # integer class
                         label = None if self.hide_labels else (names[c] if self.hide_conf else f'{names[c]} {conf:.2f}')
                         annotator.box_label(xyxy, label, color=colors(c, True))
-                        set_global_var(xyxy)
+
+                        # print(xyxy)
+                        print("target detected")
+                        if self.is_enable_mouse_lock:
+                            move_to(xyxy) # mouse control
                         
                 # Stream results
                 im0 = annotator.result()
+                now_time = time.time()
+                frame_cnt += 1
+                duration_time = now_time - that_time
+                fps = frame_cnt / duration_time
+                if frame_cnt >= 50:
+                    that_time = now_time
+                    frame_cnt = 0
                 if self.view_img:
                     # FPS show
-                    now_time = time.time()
-                    frame_cnt += 1
-                    duration_time = now_time - that_time
-                    fps = frame_cnt / duration_time
                     cv2.setWindowTitle(str(p),str(fps))
-                    if frame_cnt >= 50:
-                        that_time = now_time
-                        frame_cnt = 0
                     
-                    # time_1 = time.time()
+                    time_1 = time.time()
                     cv2.imshow(str(p), im0)
                     cv2.waitKey(1)
-                    # time_2 = time.time()
-                    # print("imgShow takes {:.2f} ms".format((time_2-time_1)*1E3))
-                    
-        if self.update:
-            strip_optimizer(self.weights[0])  # update model (to fix SourceChangeWarning)
+                    time_2 = time.time()
+                    print("imgShow takes {:.2f} ms".format((time_2-time_1)*1E3))
+                else:
+                    print("Fps is ", fps)
+
+        # if self.update:
+        #     strip_optimizer(self.weights[0])  # update model (to fix SourceChangeWarning)
 
         
     def work(self):
@@ -155,6 +162,10 @@ class YOLOv5Detector:
         self.run(self)
         
     def stop(self):
-        global should_stop
-        should_stop = True
+        self.should_stop = True
     
+    def start_mouse(self):
+        self.is_enable_mouse_lock = True
+
+    def stop_mouse(self):
+        self.is_enable_mouse_lock = False

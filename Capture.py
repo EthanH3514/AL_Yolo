@@ -4,6 +4,7 @@ from utils.augmentations import letterbox
 import numpy as np
 import time
 import threading
+import mss
 
 WIDTH, HEIGHT = pyautogui.size()
 CENTER = [WIDTH/2, HEIGHT/2]
@@ -37,6 +38,8 @@ class LoadScreen:
     def __next__(self):
         # now_time = time.time()
         
+        # act = mss.mss()
+        # im0 = act.grab()
         im0 = self.camera.get_latest_frame()
         while im0 is None:
             time.sleep(0.0005)

@@ -14,5 +14,7 @@ if __name__ == "__main__":
     for i in range(trials):
         ghub_mouse_move(1000,0)
         ghub_mouse_move(-1000,0)
-    fps = trials/(time.time()-start_time)
-    print(fps)
+    now_time = time.time()
+    fps = trials / (now_time - start_time)
+    print("time is ", now_time - start_time)
+    print("fps is ", fps)
