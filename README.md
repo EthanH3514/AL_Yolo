@@ -30,7 +30,7 @@ conda activate apex
 pip install -r requirements.txt
 ```
 #### 配置cuda、cudnn、pytorch
-
+使用gpu进行推理所必须，配置过程较复杂，请去搜索专门的资料
 
 #### 运行
 ```
