@@ -99,7 +99,7 @@ from mouse_driver.MouseMove import pygui_mouse_move as mouse_move # pyautogui
 - [ ] tensorrt推理加速
 - [x] 添加自瞄开关
 - [x] 取消对驱动的依赖
-- [ ] 多目标识别优先级判断
+- [x] 多目标识别优先级判断
 - [x] 项目架构优化
 - [x] 对不同机器参数自适应
 - [ ] 推理部分C++重写
