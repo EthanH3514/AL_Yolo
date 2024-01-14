@@ -29,7 +29,8 @@ conda create -n apex
 conda activate apex
 pip install -r requirements.txt
 ```
-#### 配置cuda、cudnn、tensorRT
+#### 配置cuda、cudnn、pytorch
+
 
 #### 运行
 ```
