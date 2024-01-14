@@ -1,7 +1,5 @@
 import os
-import platform
 from pathlib import Path
-# from mouse_control import set_global_var
 import torch
 from models.common import DetectMultiBackend
 from utils.general import (LOGGER, Profile, check_img_size, check_requirements, cv2, non_max_suppression, scale_boxes, strip_optimizer)
@@ -9,7 +7,6 @@ from utils.plots import Annotator, colors
 from utils.torch_utils import select_device
 import time
 from Capture import LoadScreen
-# from mouse_control import move_to
 from pynput.mouse import Listener
 from mouse_driver.MouseMove import ghub_mouse_move
 import pyautogui
@@ -28,15 +25,11 @@ class YOLOv5Detector:
         conf_thres=0.25,
         iou_thres=0.45,
         max_det=1000,
-        device=0,
+        device="cpu",
         view_img=False, #changed
         classes=None,
         agnostic_nms=False,
         augment=False,
-        # update=False,
-        line_thickness=3,
-        hide_labels=False,
-        hide_conf=False,
         half=True,
         dnn=False
     ):
@@ -51,9 +44,6 @@ class YOLOv5Detector:
         self.classes = classes
         self.agnostic_nms = agnostic_nms
         self.augment = augment
-        self.line_thickness = line_thickness
-        self.hide_labels = hide_labels
-        self.hide_conf = hide_conf
         self.half = half
         self.dnn = dnn
         self.should_stop = False  # flag to stop
@@ -79,32 +69,12 @@ class YOLOv5Detector:
                     self.mouse_on_click = False
                     print("鼠标锁定已关闭")
 
-    @staticmethod
-    def move_to(self, xyxy):
-        if len(xyxy) >= 4:
-            # stacked_array = np.stack([tensor.cpu().numpy() for tensor in xyxy])
-            # target = stacked_array.flatten()
-            top_left = torch.stack(xyxy[:2])
-            bottom_right = torch.stack(xyxy[2:])
-            # print("top_left is ", top_left)
-            # print("bottom_right is ", bottom_right)
-            target = ((top_left + bottom_right) / 2 - self.offset) * self.mul
-
-            # print("target is ", target)
-
-            ghub_mouse_move(target[0].item(), target[1].item())
-            # ghub_mouse_move(x / MOUSE_SENSITIVITY * 2, y / MOUSE_SENSITIVITY * 2)
-            
-            # location.clear()
-
     def get_dis(self, vec): # must not null
         return (((vec[0] + vec[2] - self.size ) / 2) ** 2 + ((vec[1] + vec[3] - self.size) / 2) ** 2) ** (1 / 2)
 
     def lock_target(self, target):
         rel_target = [item * self.smooth for item in [(target[0] + target[2] - self.size) / 2, (target[1] + target[3] - self.size) / 2]]
         move_rel_x, move_rel_y = [atan2(item, self.size) * self.size for item in rel_target]
-        # print("target is ", target)
-        # print("mov_vec is ", move_rel_x, move_rel_y)
         ghub_mouse_move(move_rel_x, move_rel_y)
 
     def run(self):
@@ -117,7 +87,7 @@ class YOLOv5Detector:
         # Dataloader
         bs = 1  # batch_size
         
-        dataset = LoadScreen(stride=stride, auto=pt)
+        dataset = LoadScreen()
 
         # Run inference
         model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup

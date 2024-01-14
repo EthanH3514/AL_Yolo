@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 from detect import YOLOv5Detector
-# import pynput
-# import winsound
-# import mouse_control
 import tkinter as tk
 import threading
 
@@ -11,7 +8,7 @@ detector = YOLOv5Detector(
     weights='./weights/best.pt',
     data='./configs/AL_data.yaml',
     imgsz=(640, 640),
-    conf_thres=0.25,
+    conf_thres=0.45,
     iou_thres=0.45,
     device='cuda'
 )
@@ -43,11 +40,7 @@ def end():
         print("目标检测已停止")
 
 def release():
-    # global is_start, is_initiate
     global is_initiate
-    # if is_start:
-        # mouse_control.stop()
-        # is_start = False
     if is_initiate:
         detector.stop()
         is_initiate = False

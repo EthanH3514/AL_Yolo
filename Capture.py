@@ -3,7 +3,6 @@ import pyautogui
 from utils.augmentations import letterbox
 import numpy as np
 import time
-import threading
 
 WIDTH, HEIGHT = pyautogui.size()
 CENTER = [WIDTH/2, HEIGHT/2]
@@ -12,18 +11,10 @@ LEFT = int(CENTER[0] - SIZE / 2)
 TOP = int(CENTER[1] - SIZE / 2)
 REGION = (LEFT, TOP, LEFT+SIZE, TOP+SIZE)
 
-data = None
-
 class LoadScreen:
-    def __init__(self, img_size = SIZE, stride = 32, auto=True, region: tuple[int,int,int,int]=REGION):
-        self.img_size = img_size
+    def __init__(self, region: tuple[int,int,int,int]=REGION):
         self.region = region
-        self.camera = dxshot.create(region=REGION, output_color="BGR")
-        self.stride = stride
-        self.auto = auto
-        self.left = region[0]
-        self.top = region[1]
-        
+        self.camera = dxshot.create(region=self.region, output_color="RGB")
         self.camera.start(target_fps=144, video_mode=True)
         
     def __iter__(self):
@@ -32,8 +23,6 @@ class LoadScreen:
     def __next__(self):
         # now_time = time.time()
         
-        # act = mss.mss()
-        # im0 = act.grab()
         im0 = self.camera.get_latest_frame()
         while im0 is None:
             im0 = self.camera.get_latest_frame()
