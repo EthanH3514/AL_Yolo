@@ -11,8 +11,8 @@ detector = YOLOv5Detector(
     weights='./weights/best.pt',
     data='./configs/AL_data.yaml',
     imgsz=(640, 640),
-    conf_thres=0.45,
-    iou_thres=0.4,
+    conf_thres=0.25,
+    iou_thres=0.45,
     device='cuda'
 )
 
