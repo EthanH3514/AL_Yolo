@@ -53,7 +53,7 @@ class YOLOv5Detector:
         self.size = 640
         self.offset = torch.tensor([self.size / 2, self.size / 2], device='cuda:0')
         self.mul = 0.4
-        self.smooth = 0.42 * 1280 / 1920
+        self.smooth = 0.42
         self.mouse_on_click = False
         self.showFPS = False
         self.listener = Listener(on_click=self.is_click)
@@ -136,7 +136,7 @@ class YOLOv5Detector:
                 frame_cnt += 1
                 duration_time = now_time - that_time
                 fps = frame_cnt / duration_time
-                if frame_cnt >= 50:
+                if frame_cnt >= 100:
                     that_time = now_time
                     frame_cnt = 0
 
