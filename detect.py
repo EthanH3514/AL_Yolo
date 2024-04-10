@@ -2,7 +2,11 @@ import os
 from pathlib import Path
 import torch
 from models.common import DetectMultiBackend
-from utils.general import (LOGGER, Profile, check_img_size, check_requirements, cv2, non_max_suppression, scale_boxes, strip_optimizer)
+
+from ultralytics.nn.autobackend import AutoBackend
+import cv2
+
+from utils.general import (LOGGER, Profile, check_img_size, check_requirements, scale_boxes, strip_optimizer)
 from utils.plots import Annotator, colors
 from utils.torch_utils import select_device
 import time
@@ -24,13 +28,14 @@ class YOLOv5Detector:
         imgsz=(640, 640),
         conf_thres=0.25,
         iou_thres=0.45,
-        max_det=1000,
+        max_det=300, #keep the default settings is enough, no nessary to use 1000
         device="cpu",
         view_img=False, #changed
         classes=None,
         agnostic_nms=False,
         augment=False,
         half=True,
+        enemy_label=0, #add enemy label for future identification
         dnn=False
     ):
         self.weights = weights
@@ -58,6 +63,7 @@ class YOLOv5Detector:
         self.showFPS = False
         self.listener = Listener(on_click=self.is_click)
         self.listener.start()
+        self.enemy_label=enemy_label
 
     def is_click(self, x, y, button, pressed):
         if self.enable_mouse_lock:
@@ -80,18 +86,30 @@ class YOLOv5Detector:
     def run(self):
         # Load model
         device = select_device(0)
-        model = DetectMultiBackend(self.weights, device=device, dnn=self.dnn, data=self.data, fp16=self.half)
-        stride, names, pt = model.stride, model.names, model.pt
+        
         imgsz = self.imgsz
 
         # Dataloader
         bs = 1  # batch_size
         
         dataset = LoadScreen()
-
-        # Run inference
-        model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
         
+        try:
+            # since we use the ultralytics version, we need to change the import
+            from ultralytics.utils.ops import non_max_suppression
+            model = AutoBackend(self.weights, device=device, dnn=self.dnn, data=self.data, fp16=self.half)
+            stride, names, pt = model.stride, model.names, model.pt
+            # Run inference
+            model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
+        except TypeError as e:
+            print("检测到旧版本的YOLOv5模型，正在尝试使用原始加载...")
+            # two versions seems to have different results, I can't find a better way to solve this problem
+            from utils.general import non_max_suppression
+            model = DetectMultiBackend(self.weights, device=device, dnn=self.dnn, data=self.data, fp16=self.half)
+            stride, names, pt = model.stride, model.names, model.pt
+            # Run inference
+            model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
+            
         frame_cnt = 0
         that_time = 0
 
@@ -123,11 +141,13 @@ class YOLOv5Detector:
                 min_dis = self.get_dis(target)
                 for vec in bound:
                     now_dis = self.get_dis(vec)
-                    if now_dis < min_dis:
+                    if now_dis < min_dis and vec[5] == self.enemy_label:
+                        # only update target when it is enemy
                         target = vec
                         min_dis = now_dis
                 
-                if self.enable_mouse_lock and self.mouse_on_click:
+                if self.enable_mouse_lock and self.mouse_on_click and target[5] == self.enemy_label:
+                    # only lock target when label is enemy and mouse is clicked
                     self.lock_target(target)
                 
             # FPS calculate
