@@ -2,6 +2,7 @@
 from detect import YOLOv5Detector
 import tkinter as tk
 import threading
+from pynput import keyboard
 
 
 detector = YOLOv5Detector(
@@ -10,6 +11,7 @@ detector = YOLOv5Detector(
     imgsz=(640, 640),
     conf_thres=0.45,
     iou_thres=0.45,
+    enemy_label=0,
     device='cuda'
 )
 
@@ -61,6 +63,19 @@ def stop_mouse():
         is_start_mouse = False
         print("鼠标锁定已关闭")
 
+def on_press(key):
+    try:
+        if key == keyboard.Key.page_up:  # 使用 PgUp 键开启鼠标锁定
+            start_mouse()
+        elif key == keyboard.Key.page_down:  # 使用 PgDn 键停止鼠标锁定
+            stop_mouse()
+    except Exception as e:
+        print('Error:', e)
+        
+def listen_keyboard():
+    # 创建键盘监听器，该监听器只响应按键事件
+    with keyboard.Listener(on_press=on_press) as listener:
+        listener.join()
 
 if __name__ == '__main__':
     root = tk.Tk()
@@ -77,5 +92,9 @@ if __name__ == '__main__':
 
     release_button = tk.Button(root, text="退出", command=release)
     release_button.grid(row=0, column=2)
+    
+    # 启动键盘监听线程
+    listener_thread = threading.Thread(target=listen_keyboard, daemon=True)
+    listener_thread.start()
     
     root.mainloop()
