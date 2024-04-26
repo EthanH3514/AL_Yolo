@@ -18,6 +18,7 @@
 
 #### 配置anaconda
 ```
+scoop bucket add extras
 scoop install anaconda3
 ```
 
@@ -25,7 +26,7 @@ scoop install anaconda3
 在项目文件夹下
 
 ```
-conda create -n apex
+conda create -n apex python=3.10
 conda activate apex
 pip install -r requirements.txt
 ```
