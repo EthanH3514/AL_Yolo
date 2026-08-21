@@ -1,106 +1,206 @@
-# 一个基于yolov5的Apex Legend AI辅瞄外挂
-## 🅿环境依赖
-* 罗技驱动(版本不超过21.9)
-* python >= 3.10 && python < 3.11
+# AL-YOLO
+
+**Real-Time Visual Target Detection and Tracking with YOLOv5**
+
+基于 YOLOv5 的实时计算机视觉目标检测与追踪系统，面向游戏场景进行实时视觉分析。
+
+项目最初开发于本科阶段，主要用于探索 **实时目标检测、GPU 推理、高速屏幕捕获以及低延迟视觉处理** 等技术。项目将 YOLOv5、GPU 推理、屏幕捕获和实时可视化等模块整合为一个完整的端到端视觉处理流程。
+
+> **主要技术：** Python · PyTorch · YOLOv5 · CUDA · OpenCV · DXShot
+
+## ✨ 项目特点
+
+* 基于 **YOLOv5s** 的实时目标检测
+* 使用 **DXShot** 进行高速屏幕捕获
+* 基于 CUDA 的 GPU 推理
+* 针对实时场景优化图像预处理与推理流程
+* 支持实时目标检测结果可视化
+* 提供轻量级 GUI 用于参数配置
+* 支持多目标检测与目标优先级判断
+* 支持不同机器环境下的参数自适应
+* 在 NVIDIA RTX 3050 Laptop GPU 上达到约 **50 FPS** 的端到端处理速度
+
+## 🏗️ 系统架构
+
+```text
+┌──────────────────┐
+│  Screen Capture  │
+│     DXShot       │
+└────────┬─────────┘
+         ↓
+┌──────────────────┐
+│ Image Processing │
+│     OpenCV       │
+└────────┬─────────┘
+         ↓
+┌──────────────────┐
+│   YOLOv5s Model  │
+│   PyTorch/CUDA   │
+└────────┬─────────┘
+         ↓
+┌──────────────────┐
+│ Target Detection │
+└────────┬─────────┘
+         ↓
+┌──────────────────┐
+│ Visualization &  │
+│ Control Interface│
+└──────────────────┘
+```
+
+## ⚡ 性能优化
+
+实时视觉系统中，屏幕捕获和模型推理都会直接影响整体处理延迟，因此项目对完整处理流程进行了针对性的性能优化。
+
+最初使用 YOLOv5 自带的 MSS 进行屏幕捕获，单次截图耗时约 **15 ms**。经过性能测试后，将屏幕捕获模块替换为更高性能的 DXCam，并进一步使用 DXShot，将截图耗时降低至约 **5 ms**。
+
+同时对 YOLOv5 推理流程进行了调整，移除部分不必要的框架层和处理步骤，并优化逐帧图像预处理，从而降低实时推理过程中的额外开销。
+
+在测试环境下，完整处理流程可以达到约 **50 FPS**。
+
+> 注意：由于系统通过屏幕捕获获取输入图像，因此最终 FPS 会受到显示器刷新率以及硬件性能的影响。
+
+## 🧠 模型训练
+
+项目使用 **YOLOv5s** 进行目标检测。
+
+### 数据集
+
+训练数据集：
+
+[AL-YOLO-dataset](https://github.com/goldjee/AL-YOLO-dataset)
+
+### 训练方法
+
+使用 [YOLOv5](https://github.com/ultralytics/yolov5) 提供的 `train.py` 进行模型训练，并根据数据集配置修改相应参数。
+
+### 训练日志
+
+![Training Log](https://user-images.githubusercontent.com/103171084/240091844-4bfd3af3-9d92-412e-8697-6d3ec8adc904.png)
+
+训练日志以及实验过程中的相关数据保存在 `exp` 目录下。
+
+## 🖥️ 屏幕捕获
+
+项目对不同屏幕捕获方案进行了测试和比较。
+
+最初使用 YOLOv5 默认的 MSS 进行截图，单次截图耗时约 **15 ms**。
+
+随后尝试使用 DXCam，并进一步使用 DXShot：
+
+```text
+MSS
+ ↓
+~15 ms
+ ↓
+DXCam
+ ↓
+DXShot
+ ↓
+~5 ms
+```
+
+最终采用 DXShot 作为主要的屏幕捕获方案，以降低实时视觉处理中的输入延迟。
+
+由于输入图像来自屏幕捕获，显示器刷新率也会限制系统能够达到的最大 FPS。
+
+## 🎮 应用场景
+
+项目最初以游戏环境作为实时计算机视觉的实验场景，通过游戏画面提供连续的视频流，用于研究：
+
+* 实时目标检测
+* 多目标识别
+* 目标优先级判断
+* 屏幕坐标与目标位置处理
+* 低延迟视觉推理
+* 实时控制接口
+
+选择游戏环境的主要原因是其具有较高的实时性要求，可以作为测试目标检测模型和低延迟视觉处理方案的实际应用场景。
+
+## 📦 环境依赖
+
+默认运行环境为 Windows。
+
+* Python >= 3.10, < 3.11
 * CUDA 11
-* torch >= 2.0
-* 更多的依赖在 `requirements.txt` 中
+* PyTorch >= 2.0
+* OpenCV
+* 其他 Python 依赖见 `requirements.txt`
 
-## ♿快速开始
-> 默认在windows系统下
+如果使用 GPU 进行推理，需要正确配置 CUDA、cuDNN 和 PyTorch。
 
-#### 配置[scoop](https://scoop.sh/)(非常好用的windows包管理器)
-打开PowerShell terminal(version 5.1 or later)
-```
-> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-> Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-```
+## 🚀 快速开始
 
-#### 配置anaconda
-```
-scoop bucket add extras
-scoop install anaconda3
+### 1. 创建 Python 环境
+
+推荐使用 Conda：
+
+```bash
+conda create -n al-yolo python=3.10
+conda activate al-yolo
 ```
 
-#### 创建conda环境并安装依赖
-在项目文件夹下
+### 2. 安装依赖
 
-```
-conda create -n apex python=3.10
-conda activate apex
+```bash
 pip install -r requirements.txt
 ```
-#### 配置cuda、cudnn、pytorch
-使用gpu进行推理所必须，配置过程较复杂，请去搜索专门的资料
 
-#### 安装罗技驱动
-提供一份2021.9版本，仅供学习
+### 3. 配置 CUDA
 
-#### 运行
-管理员模式打开一个终端
-```
+根据 NVIDIA GPU、CUDA 和 PyTorch 的版本要求完成 CUDA 环境配置。
+
+### 4. 运行
+
+```bash
 python apex.py
 ```
 
-### 模型训练
-#### 数据集地址
-[https://github.com/goldjee/AL-YOLO-dataset](https://github.com/goldjee/AL-YOLO-dataset)
-#### 训练方法
-使用[Yolov5](https://github.com/ultralytics/yolov5) 的train.py文件，修改数据集路径参数
-#### 训练日志
-![log](https://user-images.githubusercontent.com/103171084/240091844-4bfd3af3-9d92-412e-8697-6d3ec8adc904.png)
+具体配置请参考项目代码和相关配置文件。
 
-训练日志以及过程的数据存放在`exp`目录下
-### 屏幕捕捉
-~~使用[DXcam](https://github.com/ra1nty/DXcam)截图来替代yolov5自带的mss截图，将截图时间从15ms优化到5ms~~
+## 📁 项目结构
 
-使用[Dxshot](https://github.com/AI-M-BOT/DXcam/releases)将截图时间进一步优化
+```text
+AL_Yolo/
+├── configs/
+├── exp/
+├── models/
+├── mouse_driver/
+├── utils/
+├── weights/
+├── Capture.py
+├── detect.py
+├── apex.py
+├── mouse_control.py
+├── export.py
+└── ...
+```
 
-注意：因为是通过屏幕截图的方式来获取的图像，所以屏幕刷新率会限制FPS的上限
+## 🔧 后续改进
 
-### 鼠标控制
-#### 如何控制鼠标
+* [x] 优化屏幕捕获方式
+* [ ] PID 平滑控制
+* [ ] TensorRT 推理加速
+* [x] 添加实时开关
+* [x] 多目标识别与优先级判断
+* [x] 项目架构优化
+* [x] 不同机器参数自适应
+* [ ] 推理部分 C++ 重写
+* [ ] 数据集清洗与扩充
+* [x] 实时可视化 GUI
+* [ ] 生成安装包
+* [ ] 支持更多 YOLO 系列模型
 
-加入了win函数控制鼠标移动的选项，但是在训练场里试了试没有效果，有可能游戏更新之后已经把这个给修复掉了(？)，而且正常情况下win函数的效率太低，所以默认还是鼠标驱动控制鼠标
+## 📈 Open Source
 
-#### 鼠标移动函数
-![](https://user-images.githubusercontent.com/103171084/241761731-2293a5f2-6421-4d37-b353-d6ec7ea2ccc7.png)
+项目已开源，并获得 **350+ GitHub Stars**。
 
-暂时没想出来如何将鼠标直接移过去，网上也找不到前人的经验。
+感谢所有对项目感兴趣并提供反馈的开发者。
 
-基于内存的外挂自瞄原理是可以拿到三维坐标，直接修改方向角来瞄准敌人，而基于计算机视觉的外挂只能拿到目标在屏幕上的投影，这是一个二维坐标，要解算出移动的向量很依赖游戏底层的参数(视场角等，详见[issue](https://github.com/EthanH3514/AL_Yolo/issues/3))，目前还没想明白怎么一帧锁敌，也许将来会去实现。
+## 🎉 Star History
 
-况且一帧锁敌会大大提高被检测的风险性，实现的价值不大，短期内不会再向这个方向去努力了。
+[![Star History Chart](https://api.star-history.com/svg?repos=EthanH3514/AL_Yolo\&type=Date)](https://star-history.com/#EthanH3514/AL_Yolo&Date)
 
-目前采用的是将准星逐步移动到目标身上的方法，牺牲了一点点效率，达到了准星吸附一样的效果。
+## 📄 License
 
-update: 将fov的算法初步投入使用，效果还不错
-
-### 🤔如何使用
-- 将代码下载到本地
-- 部署环境依赖
-- 管理员模式打开一个终端，进入项目文件夹下运行`python apex.py`
-
-### 🎯后续改进
-
-- [x] 截图方式优化
-- [ ] ~~推理文件多线程并行~~(python多线程没啥用)
-- [ ] 加入PID平滑控制鼠标
-- [ ] tensorrt推理加速
-- [x] 添加自瞄开关（2024.4.10更新 添加了使用键盘PgUp和PgDn控制开关）
-- [x] 取消对驱动的依赖
-- [x] 多目标识别优先级判断
-- [x] 项目架构优化
-- [x] 对不同机器参数自适应
-- [ ] 推理部分C++重写
-- [ ] 数据集清洗，扩充，加入敌我识别 （2024.4.10更新 添加了用于判断敌我的标签，需敌我数据集重训模型）
-- [x] 做个前端
-- [ ] 生成安装包
-- [ ] ~~一帧拉枪~~(太难，与内存挂原理不同)
-- [-] 支持更多YOLO系列模型 （2024.4.10更新 目前测试了v8可用，但是为了最小化修改，不是很优雅的实现）
-
-### 🤩如果有帮到你就点一个star吧
-
-## 🎉Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=EthanH3514/AL_Yolo&type=Date)](https://star-history.com/#EthanH3514/AL_Yolo&Date)
+See [LICENSE](LICENSE) for details.
